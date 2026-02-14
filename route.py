@@ -1,249 +1,204 @@
-# from flask import Blueprint
+🧠 1️⃣ Flask Internally Kaise Kaam Karta Hai?
 
-# auth = Blueprint('auth', __name__)
+Flask ek WSGI application hai.
+🔹 WSGI Kya Hai?
+Web Server Gateway Interface (WSGI) ek standard hai jo:
 
-# @auth.route('/login')
-# def login():
-#     return "Login Page"
+Web Server (Nginx / Apache)
+        ↓
+WSGI Server (Gunicorn / uWSGI)
+        ↓
+Flask Application
 
 
-# 🧠 1️⃣ Flask Internally Kaise Kaam Karta Hai?
+Browser request bhejta hai →
+Server receive karta hai →
+WSGI Flask ko deta hai →
+Flask route match karta hai →
+Response return karta hai.
 
-# Flask ek WSGI application hai.
 
-# 🔹 WSGI Kya Hai?
+🔁 2️⃣ Request–Response Cycle (Very Important)
 
-# Web Server Gateway Interface (WSGI) ek standard hai jo:
+Jab koi user /login open karta hai:
+Step-by-step internal flow:
+Client HTTP request bhejta hai
+Flask request object create karta hai
+URL routing table check hoti hai
+Matched function execute hoti hai
+Response object create hota hai
+Browser ko response return hota hai
 
-# Web Server (Nginx / Apache)
-#         ↓
-# WSGI Server (Gunicorn / uWSGI)
-#         ↓
-# Flask Application
+Example:
 
+@app.route("/hello")
+def hello():
+    return "Hi"
 
-# Browser request bhejta hai →
-# Server receive karta hai →
-# WSGI Flask ko deta hai →
-# Flask route match karta hai →
-# Response return karta hai.
 
-# 🔁 2️⃣ Request–Response Cycle (Very Important)
+Internally Flask:
 
-# Jab koi user /login open karta hai:
+/hello ko route map me store karta hai
+Function reference store karta hai
+Request aane pe function call karta hai
 
-# Step-by-step internal flow:
+🏗 3️⃣ Flask Architecture (Microframework Concept)
 
-# Client HTTP request bhejta hai
+Flask ko microframework kyu bolte hain?
 
-# Flask request object create karta hai
+Kyuki:
 
-# URL routing table check hoti hai
+✔ Isme ORM built-in nahi
+✔ Authentication built-in nahi
+✔ Form validation built-in nahi
+Tum khud decide karte ho kya use karna hai.
 
-# Matched function execute hoti hai
+Compare karo:
 
-# Response object create hota hai
+Flask → Lightweight
+Django → Full-stack framework
+Flask = Lego blocks
+Django = Ready-made house
 
-# Browser ko response return hota hai
+🧩 4️⃣ App Factory Pattern Theory
 
-# Example:
+Normally beginner likhta hai:
 
-# @app.route("/hello")
-# def hello():
-#     return "Hi"
+app = Flask(__name__)
 
 
-# Internally Flask:
+Problem:
 
-# /hello ko route map me store karta hai
+Multiple apps create nahi kar sakte
+Testing difficult
+Large project me circular imports
 
-# Function reference store karta hai
+Solution:
 
-# Request aane pe function call karta hai
+def create_app():
+    app = Flask(__name__)
+    return app
 
-# 🏗 3️⃣ Flask Architecture (Microframework Concept)
 
-# Flask ko microframework kyu bolte hain?
+Isko Application Factory Pattern bolte hain.
 
-# Kyuki:
+Benefits:
 
-# ✔ Isme ORM built-in nahi
-# ✔ Authentication built-in nahi
-# ✔ Form validation built-in nahi
+✔ Modular architecture
+✔ Testing friendly
+✔ Scalable
+✔ Multiple configs possible
 
-# Tum khud decide karte ho kya use karna hai.
+🧭 5️⃣ Blueprints Theory (Modular Routing Systems)
+Flask internally routes ko ek mapping dictionary me store karta hai.
+Jab project bada ho jata hai:
+Saare routes ek file me rakhna messy ho jata hai
+Circular import problem aati hai
+Blueprint kya karta hai?
+Routes ko temporary container me store karta hai
+App me register hone ke baad final routing map me add hota hai
 
-# Compare karo:
+Example theory:
 
-# Flask → Lightweight
+Blueprint → Route Collection
+Register → App ke routing map me add
 
-# Django → Full-stack framework
+🔌 6️⃣ Extensions Internally Kaise Work Karte Hain?
 
-# Flask = Lego blocks
-# Django = Ready-made house
+Example: SQLAlchemy
 
-# 🧩 4️⃣ App Factory Pattern Theory
+db = SQLAlchemy()
+db.init_app(app)
 
-# Normally beginner likhta hai:
 
-# app = Flask(__name__)
+Theory:
 
+Extension object create hota hai (global)
+init_app() se current app ke context me attach hota hai
 
-# Problem:
+Isko bolte hain:
 
-# Multiple apps create nahi kar sakte
+Lazy binding
 
-# Testing difficult
+Benefit:
 
-# Large project me circular imports
+Multiple apps use kar sakte
+Circular import avoid hota hai
 
-# Solution:
+🧠 7️⃣ Application Context vs Request Context
 
-# def create_app():
-#     app = Flask(__name__)
-#     return app
+Ye advanced concept hai.
 
+Flask 2 special stacks maintain karta hai:
 
-# Isko Application Factory Pattern bolte hain.
+🔹 Application Context
+Global app data store karta hai.
 
-# Benefits:
+Use:
 
-# ✔ Modular architecture
-# ✔ Testing friendly
-# ✔ Scalable
-# ✔ Multiple configs possible
+current_app
+🔹 Request Context
+Request-specific data store karta hai.
 
-# 🧭 5️⃣ Blueprints Theory (Modular Routing System)
+Use:
 
-# Flask internally routes ko ek mapping dictionary me store karta hai.
+request
+Internally Flask thread-local storage use karta hai.
+Isliye har request isolated hoti hai.
 
-# Jab project bada ho jata hai:
+⚡ 8️⃣ Jinja2 Template Engine Theory
 
-# Saare routes ek file me rakhna messy ho jata hai
+Flask internally:
 
-# Circular import problem aati hai
+Template load karta hai
+Context variables inject karta hai
+Render karta hai HTML me
 
-# Blueprint kya karta hai?
+Example:
 
-# Routes ko temporary container me store karta hai
+return render_template("index.html", name="Aman")
 
-# App me register hone ke baad final routing map me add hota hai
+Internally:
 
-# Example theory:
+HTML file load
+{{ name }} replace
+Final HTML return
 
-# Blueprint → Route Collection
-# Register → App ke routing map me add
+🔐 9️⃣ Security Theory (Important)
 
-# 🔌 6️⃣ Extensions Internally Kaise Work Karte Hain?
+Flask automatically:
 
-# Example: SQLAlchemy
+✔ Escapes HTML (XSS prevent)
+✔ Secure cookies support
+✔ Session signing support
 
-# db = SQLAlchemy()
-# db.init_app(app)
+But:
 
+❌ CSRF built-in nahi
+❌ Password hashing manually karna padega
 
-# Theory:
+🧱 1️⃣0️⃣ Production Architecture Theory
 
-# Extension object create hota hai (global)
+Production me direct Flask run nahi karte.
 
-# init_app() se current app ke context me attach hota hai
+Instead:
 
-# Isko bolte hain:
+Nginx → Gunicorn → Flask
 
-# Lazy binding
+Why?
 
-# Benefit:
+Nginx static files handle karta hai
+Gunicorn multi-process WSGI server hai
+Flask sirf application logic handle karta hai
 
-# Multiple apps use kar sakte
-
-# Circular import avoid hota hai
-
-# 🧠 7️⃣ Application Context vs Request Context
-
-# Ye advanced concept hai.
-
-# Flask 2 special stacks maintain karta hai:
-
-# 🔹 Application Context
-
-# Global app data store karta hai.
-
-# Use:
-
-# current_app
-
-# 🔹 Request Context
-
-# Request-specific data store karta hai.
-
-# Use:
-
-# request
-
-
-# Internally Flask thread-local storage use karta hai.
-
-# Isliye har request isolated hoti hai.
-
-# ⚡ 8️⃣ Jinja2 Template Engine Theory
-
-# Flask internally:
-
-# Template load karta hai
-
-# Context variables inject karta hai
-
-# Render karta hai HTML me
-
-# Example:
-
-# return render_template("index.html", name="Aman")
-
-
-# Internally:
-
-# HTML file load
-# {{ name }} replace
-# Final HTML return
-
-# 🔐 9️⃣ Security Theory (Important)
-
-# Flask automatically:
-
-# ✔ Escapes HTML (XSS prevent)
-# ✔ Secure cookies support
-# ✔ Session signing support
-
-# But:
-
-# ❌ CSRF built-in nahi
-# ❌ Password hashing manually karna padega
-
-# 🧱 1️⃣0️⃣ Production Architecture Theory
-
-# Production me direct Flask run nahi karte.
-
-# Instead:
-
-# Nginx → Gunicorn → Flask
-
-
-# Why?
-
-# Nginx static files handle karta hai
-
-# Gunicorn multi-process WSGI server hai
-
-# Flask sirf application logic handle karta hai
-
-# 📌 Summary – Flask Real Theory
-# Concept	Core Idea
-# WSGI	Web server interface
-# Request Cycle	Client → Route → Function → Response
-# Microframework	Minimal core
-# App Factory	Scalable app creation
-# Blueprints	Modular routing
-# Extensions	Lazy binding
-# Context	Thread isolation
-# Jinja	Template rendering
-# Production	WSGI server + reverse proxy
+📌 Summary –      Flask Real Theory
+Concept            Core Idea
+WSGI	             Web server interface
+Request Cycle     Client → Route → Function → Response
+Microframework	 Minimal core
+App Factory	     Scalable app creation
+Blueprints	     Modular routing
+Extensions	     Lazy binding
+Context	         Thread isolation
+Jinja	Template     rendering
+Production	     WSGI server + reverse proxy
