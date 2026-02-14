@@ -1,1 +1,172 @@
-<h1>Hello {{ name }}</h1>
+{% comment %} <h1>Hello {{ name }}</h1> {% endcomment %}
+
+1. Professional Production Structure (Industry Standard)
+myproject/
+│
+├── app/
+│   ├── __init__.py
+│   ├── models.py
+│   ├── routes.py
+│   ├── forms.py
+│   ├── extensions.py
+│   ├── auth/
+│   │     ├── __init__.py
+│   │     └── routes.py
+│   ├── templates/
+│   └── static/
+│
+├── migrations/
+├── config.py
+├── run.py
+├── requirements.txt
+└── .env
+
+
+📂 app/init.py (App Factory Pattern)
+
+Yaha Flask app create hoti hai.
+
+from flask import Flask
+from .extensions import db
+from .routes import main
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object("config.Config")
+
+    db.init_app(app)
+    app.register_blueprint(main)
+
+    return app
+
+
+👉 Ye scalable architecture hai.
+Industry me isi pattern ka use hota hai.
+
+
+📂 config.py
+
+Configuration file (Secrets yaha hardcode nahi karte production me).
+
+import os
+
+class Config:
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///app.db"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+
+📂 extensions.py
+
+Saare extensions yaha initialize hote hain.
+
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+
+db = SQLAlchemy()
+login_manager = LoginManager()
+
+
+📂 models.py
+
+Database models yaha hote hain.
+
+from .extensions import db
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(200))
+
+📂 routes.py
+
+Main routes yaha likhte hain.
+
+from flask import Blueprint, render_template
+
+main = Blueprint("main", __name__)
+
+@main.route("/")
+def home():
+    return render_template("index.html")
+
+📂 auth/routes.py (Authentication Module)
+from flask import Blueprint
+
+auth = Blueprint("auth", __name__)
+
+@auth.route("/login")
+def login():
+    return "Login Page"
+
+📂 run.py
+
+App run karne ke liye:
+
+from app import create_app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+Run:
+
+python run.py
+
+📂 requirements.txt
+flask
+flask_sqlalchemy
+flask_login
+python-dotenv
+
+
+Install:
+
+pip install -r requirements.txt
+
+📂 .env (Secrets Store)
+SECRET_KEY=supersecretkey
+
+🧠 Kab Kaunsi File Use Hoti Hai?
+Feature	           File
+App Creation	 __init__.py
+Config	          config.py
+Database Models	  models.py
+Routes	          routes.py
+Authentication	  auth/routes.py
+Extensions	      extensions.py
+Templates	      templates/
+Static files	  static/
+
+
+🔥 Large Project Structure (Advanced)
+
+Agar project bahut bada ho:
+
+app/
+  users/
+      routes.py
+      models.py
+      forms.py
+  blog/
+      routes.py
+      models.py
+      services.py
+
+
+👉 Har feature ka apna module.
+
+Isko modular architecture bolte hain.
+
+🏆 Real Industry Best Practices
+
+✔ App Factory Pattern
+✔ Blueprint use karo
+✔ Secrets .env me rakho
+✔ Models separate rakho
+✔ Business logic services me rakho
+✔ Production me Gunicorn use karo
+✔ Docker use karo
